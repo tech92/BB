@@ -48,8 +48,6 @@ def main():
     password = None
     newPassword = None
 
-
-
     pos = 2  # 0 is the name of the file , 1 is the option , 2+ are the arguments
     if 'sfn:' in sys.argv:
         secondaryAuthors = list()
@@ -786,7 +784,7 @@ def export(pid, style):
             if IsExist(Check[i], 'Secondary Authors') != None:
                 for j in Check[i]['Secondary Authors']:
                     dic["contributors"].append(
-                        {"function": 'editor', "first": Check[i]['Secondary Authors'][j]['First Name'],
+                        {"function": 'author', "first": Check[i]['Secondary Authors'][j]['First Name'],
                          "last": Check[i]['Secondary Authors'][j]['Last Name']})
             response = requests.put("https://api.citation-api.com/2.1/rest/cite", json.dumps(dic))
             data = response.json()
@@ -794,6 +792,8 @@ def export(pid, style):
             ExportToFile(text, "Project" + str(pid) + ".txt")
     ExportToFile("\n", "Project" + str(pid) + ".txt")
     print("Project" + str(pid) + " was successfully exported to Project" + str(pid) + ".txt")
+
+
 
 #--------tests:
 def test_exports():
