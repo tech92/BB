@@ -565,20 +565,20 @@ def printCitation(citation):
         if citation['Date']['Format'] == 'IL':
             print('Format: ' + citation['Date']['Format'])
             if 'Day' in citation['Date']:
-                d = citation['Date']
+                d = citation['Date']['Day']
             if 'Month' in citation['Date']:
-                m = citation['Date']
+                m = citation['Date']['Month']
             if 'Year' in citation['Date']:
-                y = citation['Date']
+                y = citation['Date']['Year']
             print(str(d).zfill(2) + '.' + str(m).zfill(2) + '.' + str(y).zfill(4),'\n')
         if citation['Date']['Format'] == 'USA':
             print('Format: ' + citation['Date']['Format'])
             if 'Day' in citation['Date']:
-                d = citation['Date']
+                d = citation['Date']['Day']
             if 'Month' in citation['Date']:
-                m = citation['Date']
+                m = citation['Date']['Month']
             if 'Year' in citation['Date']:
-                y = citation['Date']
+                y = citation['Date']['Year']
             print(str(m).zfill(2) + '/' + str(d).zfill(2) + '/' + str(y).zfill(4)+'\n')
 
     if 'Publisher' in citation:
