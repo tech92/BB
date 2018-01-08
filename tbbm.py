@@ -5,8 +5,6 @@ import requests
 import json
 import doctest
 
-
-
 fb = firebase.FirebaseApplication('https://the-bb-manager.firebaseio.com')
 conflag = 1
 try:
@@ -24,7 +22,8 @@ if len(sys.argv) > 1 and conflag:
             print("You must first login")
             logflag = None
 
-#----------main:
+
+# ----------main:
 def main():
     id = None  # default values
     name = None
@@ -47,6 +46,7 @@ def main():
     publisher = None
     password = None
     newPassword = None
+    formatDate = None
 
     pos = 2  # 0 is the name of the file , 1 is the option , 2+ are the arguments
     if 'sfn:' in sys.argv:
@@ -107,6 +107,9 @@ def main():
         elif sys.argv[pos] == 'u:':
             pos += 1
             url = sys.argv[pos]
+        elif sys.argv[pos] == 'fr:':
+            pos += 1
+            formatDate = sys.argv[pos]
         elif sys.argv[pos] == 'd:':
             pos += 1
             day = sys.argv[pos]
@@ -176,10 +179,10 @@ def main():
             deleteCategory(id)
         elif case == '-ac':
             addCitation(sourceType, projectIDs, title, firstName, lastName, categoryIDs, isFinal, note, year, month,
-                        day, pageStart, pageEnd, url, secondaryAuthors, publisher)
+                        day, pageStart, pageEnd, url, secondaryAuthors, publisher, formatDate)
         elif case == '--addCitation':
             addCitation(sourceType, projectIDs, title, firstName, lastName, categoryIDs, isFinal, note, year, month,
-                        day, pageStart, pageEnd, url, secondaryAuthors, publisher)
+                        day, pageStart, pageEnd, url, secondaryAuthors, publisher, formatDate)
         elif case == '-ec':
             editCitation(id, sourceType, projectIDs, title, firstName, lastName, categoryIDs, isFinal, note, year,
                          month, day, pageStart, pageEnd, url, secondaryAuthors, publisher)
@@ -231,11 +234,10 @@ def main():
             return
 
 
-
-#--------definitions:
+# --------definitions:
 def getHelp():
     """ returns the help string """
-    str = '=========================================\n\nWelcome to The BB Manager!\n\n* Please notice that the first argument after the filename must be an option,         *\n* while the order of the rest doesn\'t matter                                          *\n* (except for secondary names,where last name must come after first name).            *\n* Also please separate the argument marks and the values with a blank space.          *\n* In addition you can use " " to mark few words as one argument(notes for example).   *\n* "<" and ">" are used to demonstrate the syntax,using them is not necessary.         *\n\nHere are your options:\n\n==========================================================================================================\n"-h" or "--help" to print this message\n==========================================================================================================\n"-li" or "--login" to log into The BB Manager:\n\nPlease use the following format:\n\'python tbbm.py -li pass: <password> \'\nPlease note that you won\'t be asked to login again until you log out.\n==========================================================================================================\n"-lo" or "--logout" to log out The BB Manager\n==========================================================================================================\n"-cp" or "--changePassword" to change the current password:\n\nPlease use the following format:\n\'python tbbm.py -cp (or --changePassword) pass: <old_password> np: <new_password> \n==========================================================================================================\n"-ut" or "--unitTests" to run the tests.\n==========================================================================================================\n"-ap" or "--addProject" to add a new project:\n\nPlease use the following format:\n\'python tbbm.py -ap (or --addProject) n: "Project Name"  \' \nwhile "n:" is used to mark the name of the project\n==========================================================================================================\n"-ep" or "--editProject" to edit an existing project:\n\nPlease use the following format:\n\'python tbbm.py -ep (or --editProject) id: <id> pn: "Updated Name" \'\nwhile "<id>" is the id of the project you want to update \nor\n\'python tbbm.py -ep (or --editProject) id: <id> s: "Updated State" \'\nwhile "s:" is to mark the state of your project (Active/Projected/Archived) \n==========================================================================================================\n"-dp" or "--deleteProject" to delete a project:\n\nPlease use the following format:\n\'python tbbm.py -dp (or --deleteProject) id: <id> \'\nwhile "<id>" is the id of the project you want to delete \n==========================================================================================================\n"-acat" or "--addCategory" to add a new category:\n\nPlease use the following format:\n\'python tbbm.py -acat (or --addCategory) n: "Category Name"  \' \nwhile "n:" is used to mark the name of the category\n==========================================================================================================\n"-ecat" or "--editCategory" to edit an existing category:\n\nPlease use the following format:\n\'python tbbm.py -ecat (or --editCategory) id: <id> n: "Updated Name" \'\nwhile "<id>" is the id of the Category you want to update \n==========================================================================================================\n"-dcat" or "--deleteCategory" to delete a category:\n\nPlease use the following format:\n\'python tbbm.py -dcat (or --deleteCategory) id: <id> \'\nwhile "<id>" is the id of the category you want to delete \n==========================================================================================================\n"-ac" or "--addCitation" to add a new citation:\n\nPlease use the following format:\n\'python tbbm.py -ac (or --addCitation) <mark1>: <value1> <mark2>: <value2> ... \' \nHere is the list of the marks you can use ( part of them are mandatory ):\n"st:"  - source type (Available source types are: Book, Journal, Newspaper, Online, Magazine)\n"pid:" - the ID(s) of the project(s) that the citation is related to (for example pid: "1 2 3 4")\n"t:"   - title \n"fn:"  - main author\'s first name\n"ln:"  - main author\'s last name\n"cid:" - the ID(s) of the category(ies) that the citation is relevant to \n"f:"   - will the file appear in the final version (yes/no )\n"no:"  - a note\n"y:"   - publishing year \n"pub:" - publisher 		                   \n"m:"   - publishing month 		           \n"d:"   - publishing day  			   \n"ps:"  - from page __     			   \n"pe:"  - to page __       			   \n"u:"   - URL              			   \n"sfn:" - secondary author\'s first name            \n"sln:" - secondary author\'s last name             \n==========================================================================================================\n"-ec" or "--editCitation" to edit an existing citation:\n\nPlease use the following format:\n\'python tbbm.py -ec (or --editCitation) id: <id> <mark1>: <new_value1> <mark2>: <new_value2> ... \'\nwhile "<id>" is the id of the citation you want to update \nand   "<mark>" is the mark of the field you want to update \n==========================================================================================================\n"-dc" or "--deleteCitation" to delete an existing citation:\n\nPlease use the following format:\n\'python tbbm.py -dc (or --deleteCitation) id: <id> \'\nwhile "<id>" is the id of the citation you would like to delete\n==========================================================================================================\n"-pap" or "--printAllProjects" to print all the projects\n==========================================================================================================\n"-paca" or "--printAllCategories" to print all the categories\n==========================================================================================================\n"-paci" or "--printAllCitations" to print all the citations\n==========================================================================================================\n"-ppc" or "--printProjectCitations" to print all the citations that are related to a particular project:\n\nPlease use the following format:\n\'python tbbm.py -ppc (or --printProjectCitations) id: <id> \' \nwhile "<id>" is the id of the project you are intrested in\n==========================================================================================================\n"-pcc" or "--printCategoryCitations" to print all the citations that are related to a particular category:\n\nPlease use the following format:\n\'python tbbm.py -pcc (or --printCategoryCitations) id: <cid> \' \nwhile "<cid>" is the id of the category you are intrested in\n==========================================================================================================\n"-eieee" or "--exportIEEE" to export a bibliography in IEEE format to a textfile:\n\nPlease use the following format:\n\'python tbbm.py -eieee (or --exportIEEE) <id> \' \nwhile <id> is the id of the project you would like to export in IEEE format\nPlease note that only the citations that are marked as "Will be exported" will be exported.\n==========================================================================================================\n"-emla" or "--exportMLA" to export a bibliography in MLA format to a textfile:\n\nPlease use the following format:\n\'python tbbm.py -emla (or --exportMLA) <id> \' \nwhile <id> is the id of the project you would like to export in MLA format\nPlease note that only the citations that are marked as "Will be exported" will be exported.\n==========================================================================================================\n"-eh" or "--exportHarvard" to export a bibliography in Harvard format to a textfile:\n\nPlease use the following format:\n\'python tbbm.py -eieee (or --exportHarvard) <id> \' \nwhile <id> is the id of the project you would like to export in Harvard format\nPlease note that only the citations that are marked as "Will be exported" will be exported.\n==========================================================================================================\n"-eapa" or "--exportAPA" to export a bibliography in APA format to a textfile:\n\nPlease use the following format:\n\'python tbbm.py -eieee (or --exportAPA) <id> \' \nwhile <id> is the id of the project you would like to export in APA format\nPlease note that only the citations that are marked as "Will be exported" will be exported.\n==========================================================================================================\nFor more information please contact the developers.\nThank you for using The BB Manager :) \n\n=========================================\n'
+    str = '=========================================\n\nWelcome to The BB Manager!\n\n* Please notice that the first argument after the filename must be an option,         *\n* while the order of the rest doesn\'t matter                                          *\n* (except for secondary names,where last name must come after first name).            *\n* Also please separate the argument marks and the values with a blank space.          *\n* In addition you can use " " to mark few words as one argument(notes for example).   *\n* "<" and ">" are used to demonstrate the syntax,using them is not necessary.         *\n\nHere are your options:\n\n==========================================================================================================\n"-h" or "--help" to print this message\n==========================================================================================================\n"-li" or "--login" to log into The BB Manager:\n\nPlease use the following format:\n\'python tbbm.py -li pass: <password> \'\nPlease note that you won\'t be asked to login again until you log out.\n==========================================================================================================\n"-lo" or "--logout" to log out The BB Manager\n==========================================================================================================\n"-cp" or "--changePassword" to change the current password:\n\nPlease use the following format:\n\'python tbbm.py -cp (or --changePassword) pass: <old_password> np: <new_password> \n==========================================================================================================\n"-ut" or "--unitTests" to run the tests.\n==========================================================================================================\n"-ap" or "--addProject" to add a new project:\n\nPlease use the following format:\n\'python tbbm.py -ap (or --addProject) n: "Project Name"  \' \nwhile "n:" is used to mark the name of the project\n==========================================================================================================\n"-ep" or "--editProject" to edit an existing project:\n\nPlease use the following format:\n\'python tbbm.py -ep (or --editProject) id: <id> pn: "Updated Name" \'\nwhile "<id>" is the id of the project you want to update \nor\n\'python tbbm.py -ep (or --editProject) id: <id> s: "Updated State" \'\nwhile "s:" is to mark the state of your project (Active/Projected/Archived) \n==========================================================================================================\n"-dp" or "--deleteProject" to delete a project:\n\nPlease use the following format:\n\'python tbbm.py -dp (or --deleteProject) id: <id> \'\nwhile "<id>" is the id of the project you want to delete \n==========================================================================================================\n"-acat" or "--addCategory" to add a new category:\n\nPlease use the following format:\n\'python tbbm.py -acat (or --addCategory) n: "Category Name"  \' \nwhile "n:" is used to mark the name of the category\n==========================================================================================================\n"-ecat" or "--editCategory" to edit an existing category:\n\nPlease use the following format:\n\'python tbbm.py -ecat (or --editCategory) id: <id> n: "Updated Name" \'\nwhile "<id>" is the id of the Category you want to update \n==========================================================================================================\n"-dcat" or "--deleteCategory" to delete a category:\n\nPlease use the following format:\n\'python tbbm.py -dcat (or --deleteCategory) id: <id> \'\nwhile "<id>" is the id of the category you want to delete \n==========================================================================================================\n"-ac" or "--addCitation" to add a new citation:\n\nPlease use the following format:\n\'python tbbm.py -ac (or --addCitation) <mark1>: <value1> <mark2>: <value2> ... \' \nHere is the list of the marks you can use ( part of them are mandatory ):\n"st:"  - source type (Available source types are: Book, Journal, Newspaper, Online, Magazine)\n"pid:" - the ID(s) of the project(s) that the citation is related to (for example pid: "1 2 3 4")\n"t:"   - title \n"fn:"  - main author\'s first name\n"ln:"  - main author\'s last name\n"cid:" - the ID(s) of the category(ies) that the citation is relevant to \n"f:"   - will the file appear in the final version (yes/no )\n"no:"  - a note\n "fr:" - publishing Format (Press: USA -> mm/dd/yyy --- Press: IL ->dd.mm.yyyy) \n"y:"   - publishing year \n"pub:" - publisher ( please note that it should be one of the publishers in the list )		                   \n"m:"   - publishing month 		           \n"d:"   - publishing day  			   \n"ps:"  - from page __     			   \n"pe:"  - to page __       			   \n"u:"   - URL              			   \n"sfn:" - secondary author\'s first name            \n"sln:" - secondary author\'s last name             \n==========================================================================================================\n"-ec" or "--editCitation" to edit an existing citation:\n\nPlease use the following format:\n\'python tbbm.py -ec (or --editCitation) id: <id> <mark1>: <new_value1> <mark2>: <new_value2> ... \'\nwhile "<id>" is the id of the citation you want to update \nand   "<mark>" is the mark of the field you want to update \n==========================================================================================================\n"-dc" or "--deleteCitation" to delete an existing citation:\n\nPlease use the following format:\n\'python tbbm.py -dc (or --deleteCitation) id: <id> \'\nwhile "<id>" is the id of the citation you would like to delete\n==========================================================================================================\n"-pap" or "--printAllProjects" to print all the projects\n==========================================================================================================\n"-paca" or "--printAllCategories" to print all the categories\n==========================================================================================================\n"-paci" or "--printAllCitations" to print all the citations\n==========================================================================================================\n"-ppc" or "--printProjectCitations" to print all the citations that are related to a particular project:\n\nPlease use the following format:\n\'python tbbm.py -ppc (or --printProjectCitations) id: <id> \' \nwhile "<id>" is the id of the project you are intrested in\n==========================================================================================================\n"-pcc" or "--printCategoryCitations" to print all the citations that are related to a particular category:\n\nPlease use the following format:\n\'python tbbm.py -pcc (or --printCategoryCitations) id: <cid> \' \nwhile "<cid>" is the id of the category you are intrested in\n==========================================================================================================\n"-eieee" or "--exportIEEE" to export a bibliography in IEEE format to a textfile:\n\nPlease use the following format:\n\'python tbbm.py -eieee (or --exportIEEE) <id> \' \nwhile <id> is the id of the project you would like to export in IEEE format\nPlease note that only the citations that are marked as "Will be exported" will be exported.\n==========================================================================================================\n"-emla" or "--exportMLA" to export a bibliography in MLA format to a textfile:\n\nPlease use the following format:\n\'python tbbm.py -emla (or --exportMLA) <id> \' \nwhile <id> is the id of the project you would like to export in MLA format\nPlease note that only the citations that are marked as "Will be exported" will be exported.\n==========================================================================================================\n"-eh" or "--exportHarvard" to export a bibliography in Harvard format to a textfile:\n\nPlease use the following format:\n\'python tbbm.py -eieee (or --exportHarvard) <id> \' \nwhile <id> is the id of the project you would like to export in Harvard format\nPlease note that only the citations that are marked as "Will be exported" will be exported.\n==========================================================================================================\n"-eapa" or "--exportAPA" to export a bibliography in APA format to a textfile:\n\nPlease use the following format:\n\'python tbbm.py -eieee (or --exportAPA) <id> \' \nwhile <id> is the id of the project you would like to export in APA format\nPlease note that only the citations that are marked as "Will be exported" will be exported.\n==========================================================================================================\nFor more information please contact the developers.\nThank you for using The BB Manager :) \n\n=========================================\n'
     return str
 
 
@@ -372,7 +374,7 @@ def deleteCategory(catid):
 
 
 def addCitation(source, projectIDs, title, firstName, lastName, categoryIDs, isFinal, note, year, month, day, pageStart,
-                pageEnd, url, secondaryAuthors, publisher):
+                pageEnd, url, secondaryAuthors, publisher, formatDate):
     """ adds a new citation """
     if source != 'Journal' and source != 'journal' and source != 'Book' and source != 'book' and source != 'Newspaper' and source != 'newspaper' and source != 'Online' and source != 'online' and source != 'Magazine' and source != 'magazine':
         print("Wrong source type")
@@ -399,12 +401,14 @@ def addCitation(source, projectIDs, title, firstName, lastName, categoryIDs, isF
         fb.put('/DB/Citations/Citation' + sid, 'Will be exported', False)
     if note:
         fb.put('/DB/Citations/Citation' + sid, 'Note', note)
-    if year:
-        fb.put('/DB/Citations/Citation' + sid + '/Date', 'Year', year)
-    if month:
-        fb.put('/DB/Citations/Citation' + sid + '/Date', 'Month', month)
-    if day:
-        fb.put('/DB/Citations/Citation' + sid + '/Date', 'Day', day)
+    if formatDate:
+        fb.put('/DB/Citations/Citation' + sid + '/Date', '/Format', formatDate)
+        if year:
+            fb.put('/DB/Citations/Citation' + sid + '/Date', 'Year', year)
+        if month:
+            fb.put('/DB/Citations/Citation' + sid + '/Date', 'Month', month)
+        if day:
+            fb.put('/DB/Citations/Citation' + sid + '/Date', 'Day', day)
     if pageStart:
         fb.put('/DB/Citations/Citation' + sid + '/Pages', 'From', pageStart)
     if pageEnd:
@@ -556,6 +560,27 @@ def printCitation(citation):
         else:
             print('end', end='')
         print('')
+    if 'Date' in citation:
+        print('Date: ')
+        if citation['Date']['Format'] == 'IL':
+            print('Format: ' + citation['Date']['Format'])
+            if 'Day' in citation['Date']:
+                d = citation['Date']
+            if 'Month' in citation['Date']:
+                m = citation['Date']
+            if 'Year' in citation['Date']:
+                y = citation['Date']
+            print(str(d).zfill(2) + '.' + str(m).zfill(2) + '.' + str(y).zfill(4),'\n')
+        if citation['Date']['Format'] == 'USA':
+            print('Format: ' + citation['Date']['Format'])
+            if 'Day' in citation['Date']:
+                d = citation['Date']
+            if 'Month' in citation['Date']:
+                m = citation['Date']
+            if 'Year' in citation['Date']:
+                y = citation['Date']
+            print(str(m).zfill(2) + '/' + str(d).zfill(2) + '/' + str(y).zfill(4)+'\n')
+
     if 'Publisher' in citation:
         print('Publisher: ', citation['Publisher'])
     if 'URL' in citation:
@@ -794,8 +819,7 @@ def export(pid, style):
     print("Project" + str(pid) + " was successfully exported to Project" + str(pid) + ".txt")
 
 
-
-#--------tests:
+# --------tests:
 def test_exports():
     """
         >>> test_exports()
@@ -812,14 +836,17 @@ def test_exports():
     id2 = fb.get('/', 'nextCitationID')
     fakeid2 = 985124
     fb.put('/', 'nextCitationID', fakeid2)
-    addCitation("book",[985123,],"aaaa","bbbb","cccc",1,True,"dddd",1990,12,12,58,96,"dfdsfsd",None,"fdgdf")
-    export(985123,"harvard")
+    addCitation("book", [985123, ], "aaaa", "bbbb", "cccc", 1, True, "dddd", 1990, 12, 12, 58, 96, "dfdsfsd", None,
+                "fdgdf")
+    export(985123, "harvard")
     doctest.testfile("Project" + str(fakeid1) + ".txt")
     deleteCitation(fakeid2)
     fb.put('/', 'nextCitationID', id2)
     deleteProject(fakeid1)
     fb.put('/', 'nextProjectID', id1)
     os.remove("Project985123.txt")
+
+
 def test_addProject_editProject_deleteProject():
     """
         >>> test_addProject_editProject_deleteProject()
@@ -830,16 +857,17 @@ def test_addProject_editProject_deleteProject():
         Project #985123 was updated
         Project #985123 was deleted (if existed)
     """
-    id=fb.get('/','nextProjectID')
-    fakeid=985123
+    id = fb.get('/', 'nextProjectID')
+    fakeid = 985123
     fb.put('/', 'nextProjectID', fakeid)
     addProject(None)
     addProject('test')
-    editProject(None,None,None)
-    editProject(fakeid,None,None)
-    editProject(fakeid,pname='newtest',pstate=None)
+    editProject(None, None, None)
+    editProject(fakeid, None, None)
+    editProject(fakeid, pname='newtest', pstate=None)
     deleteProject(fakeid)
-    fb.put('/','nextProjectID',id)
+    fb.put('/', 'nextProjectID', id)
+
 
 def test_addCategory_editCategory_deleteCategory():
     """
@@ -856,11 +884,12 @@ def test_addCategory_editCategory_deleteCategory():
     fb.put('/', 'nextCategoryID', fakeid)
     addCategory(None)
     addCategory('test')
-    editCategory(None,None)
-    editCategory(fakeid,None)
-    editCategory(fakeid,'newtest')
+    editCategory(None, None)
+    editCategory(fakeid, None)
+    editCategory(fakeid, 'newtest')
     deleteCategory(fakeid)
     fb.put('/', 'nextCategoryID', id)
+
 
 def test_addCitation_editCitation_deleteCitation():
     """
@@ -875,17 +904,16 @@ def test_addCitation_editCitation_deleteCitation():
     id = fb.get('/', 'nextCitationID')
     fakeid = 985123
     fb.put('/', 'nextCitationID', fakeid)
-    addCitation(None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None)
-    addCitation('Book', None, None, None, None, None, None, None, None, None,None, None, None, None, None, None)
-    editCitation(None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None)
-    editCitation(fakeid,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None)
-    editCitation(fakeid, 'Online', None, None, None, None, None, None, None, None, None,None, None, None, None, None, None)
+    addCitation(None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
+    addCitation('Book', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
+    editCitation(None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
+    editCitation(fakeid, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
+    editCitation(fakeid, 'Online', None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+                 None)
     deleteCitation(fakeid)
     fb.put('/', 'nextCitationID', id)
 
 
-#-----------------------------------
+# -----------------------------------
 if logflag and conflag:
     main()
-
-
