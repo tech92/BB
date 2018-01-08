@@ -82,7 +82,7 @@ Here is the list of the marks you can use ( part of them are mandatory ):
 "f:"   - will the file appear in the final version (yes/no )
 "no:"   - a note
 "y:"   - publishing year
-"pub:" - publisher                                
+"pub:" - publisher      ( please note that it should be one of the publishers in the list )                          
 "m:"   - publishing month                         
 "d:"   - publishing day                           
 "ps:"  - from page __                             
