@@ -4,7 +4,7 @@ from firebase import firebase
 import requests
 import json
 import doctest
-
+import datetime
 
 
 fb = firebase.FirebaseApplication('https://the-bb-manager.firebaseio.com')
@@ -285,6 +285,8 @@ def addProject(pname):
     fb.put('/DB/Projects/Project' + sid, 'ID', id)
     fb.put('/DB/Projects/Project' + sid, 'Name', pname)
     fb.put('/DB/Projects/Project' + sid, 'State', 'Active')
+    fb.put('/DB/Projects/Project' + sid, 'last_date_changed', datetime.datetime.now().date())
+    fb.put('/DB/Projects/Project' + sid, 'last_time_changed', "{}:{}:{}".format(datetime.datetime.now().hour,datetime.datetime.now().minute,datetime.datetime.now().second))
     print("Project #" + sid + " was added")
 
 
@@ -320,6 +322,10 @@ def editProject(pid, pname, pstate):
             fb.put('/DB/Projects/Project' + str(pid), 'State', pstate)
     if flag or pname:
         print("Project #" + str(pid) + " was updated")
+        fb.put('/DB/Projects/Project' + str(pid), 'last_date_changed', datetime.datetime.now().date())
+        fb.put('/DB/Projects/Project' + str(pid), 'last_time_changed',
+               "{}:{}:{}".format(datetime.datetime.now().hour, datetime.datetime.now().minute,
+                                 datetime.datetime.now().second))
 
 
 def deleteProject(pid):
@@ -338,6 +344,8 @@ def addCategory(catname):
     sid = str(id)
     fb.put('/DB/Categories/Category' + sid, 'ID', id)
     fb.put('/DB/Categories/Category' + sid, 'Name', catname)
+    fb.put('/DB/Categories/Category' + sid, 'last_date_changed', datetime.datetime.now().date())
+    fb.put('/DB/Categories/Category' + sid, 'last_time_changed', "{}:{}:{}".format(datetime.datetime.now().hour,datetime.datetime.now().minute,datetime.datetime.now().second))
     print("Category #" + sid + " was added")
 
 
@@ -363,6 +371,9 @@ def editCategory(catid, catname):
         return
     fb.put('/DB/Categories/Category' + str(catid), 'Name', catname)
     print("Category #" + str(catid) + " was edited")
+    fb.put('/DB/Categories/Category' + str(catid), 'last_date_changed', datetime.datetime.now().date())
+    fb.put('/DB/Categories/Category' + str(catid), 'last_time_changed', "{}:{}:{}".format(datetime.datetime.now().hour,datetime.datetime.now().minute,datetime.datetime.now().second))
+
 
 
 def deleteCategory(catid):
@@ -422,6 +433,10 @@ def addCitation(source, projectIDs, title, firstName, lastName, categoryIDs, isF
                    secondaryAuthors[i + 1])
             i += 2
     print("Citation #" + sid + " was added")
+    fb.put('/DB/Citations/Citation' + sid, 'last_date_changed', datetime.datetime.now().date())
+    fb.put('/DB/Citations/Citation' + sid, 'last_time_changed',
+           "{}:{}:{}".format(datetime.datetime.now().hour, datetime.datetime.now().minute,
+                             datetime.datetime.now().second))
 
 
 def citationExists(cid):
@@ -489,6 +504,10 @@ def editCitation(citationID, source, projectIDs, title, firstName, lastName, cat
                    secondaryAuthors[i + 1])
             i += 2
     print("Citation #" + sid + " was edited")
+    fb.put('/DB/Citations/Citation' + sid, 'last_date_changed', datetime.datetime.now().date())
+    fb.put('/DB/Citations/Citation' + sid, 'last_time_changed',
+           "{}:{}:{}".format(datetime.datetime.now().hour, datetime.datetime.now().minute,
+                             datetime.datetime.now().second))
 
 
 def deleteCitation(citationID):
@@ -507,6 +526,8 @@ def printAllProjects():
         print('Project ID: ', data[project]['ID'])
         print('Project Name: ', data[project]['Name'])
         print('Project State: ', data[project]['State'])
+        print('Last date updated: ', data[project]['last_date_changed'])
+        print('Last time updated: ', data[project]['last_time_changed'])
 
 
 def printAllCategories():
@@ -518,6 +539,8 @@ def printAllCategories():
         print('===============================')
         print('Category ID: ', data[category]['ID'])
         print('Category Name: ', data[category]['Name'])
+        print('Last date updated: ', data[category]['last_date_changed'])
+        print('Last time updated: ', data[category]['last_time_changed'])
 
 
 def printCitation(citation):
@@ -574,6 +597,8 @@ def printCitation(citation):
             print('Yes')
         else:
             print('No')
+    print('Last date updated: ', citation['last_date_changed'])
+    print('Last time updated: ', citation['last_time_changed'])
 
 
 def printAllCitations():
